@@ -3,65 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pixelated Swirl Animation - Mouse Wheel Control</title>
+    <title>Pixelated Swirl</title>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #000;
-            cursor: none; /* Hide the mouse cursor */
-        }
-        canvas {
-            display: block;
-            width: 100vw;
-            height: 100vh;
-        }
-        #instructions {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #fff;
-            font-family: Arial, sans-serif;
-            font-size: 16px;
-            text-align: center;
-            pointer-events: none; /* Prevents text from blocking mouse events */
-            opacity: 0.2; /* Starting opacity - lowered */
-        }
-        /* BSOD Styles */
-        #bsod {
-            display: none;  /* Hidden by default */
-            position: fixed; /* Fixed positioning to cover everything */
-            top: 0;
-            left: 0;
-            width: 100vw; /* Full viewport width */
-            height: 100vh; /* Full viewport height */
-            background-color: #0000AA; /* Classic blue */
-            color: white;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 20px;
-            padding: 20px;
-            z-index: 9999; /* Ensure it's on top of everything */
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            transform: scale(0.01);  /* Start small for zoom effect */
-            transition: transform 0.25s ease-out; /* Smooth zoom animation, now 0.25s */
-        }
-
-        #bsod.active {
-            transform: scale(1); /* Zoom to full size */
-        }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; cursor: none; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        #instructions { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); color: #fff; font: 16px Arial, sans-serif; text-align: center; pointer-events: none; opacity: 0.2; }
+        #bsod { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #0000AA; color: white; font: 20px 'Courier New', Courier, monospace; padding: 20px; z-index: 9999; justify-content: center; align-items: center; text-align: center; transform: scale(0.01); transition: transform 0.25s ease-out; }
+        #bsod.active { transform: scale(1); }
     </style>
 </head>
 <body>
     <canvas id="canvas"></canvas>
     <div id="instructions">Mouse wheel controls spin speed</div>
-
-    <!-- Blue Screen of Death Element -->
     <div id="bsod">
         <div>
             <p>A fatal exception has occurred at 0x74686973206973206a7573742061206a6f6b65. The current application will be terminated.</p>
@@ -76,98 +29,62 @@
         const instructions = document.getElementById('instructions');
         const bsod = document.getElementById('bsod');
 
-        // Responsive canvas sizing
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // Constants
         const PIXEL_SIZE = 5;
         const NUM_PIXELS = 5000;
 
-        // Mouse position
         let mouseX = canvas.width / 2;
         let mouseY = canvas.height / 2;
 
-        // Track mouse movement
-        canvas.addEventListener('mousemove', (event) => {
-            mouseX = event.clientX;
-            mouseY = event.clientY;
-        });
+        canvas.addEventListener('mousemove', (event) => { mouseX = event.clientX; mouseY = event.clientY; });
 
-        // Mouse wheel control for speed and direction
         let baseSpeed = 0.015;
-        let paused = false;  // Flag to track pause state
-        let lastUnpauseSpeed = 0; // Store the speed when unpaused
+        let paused = false;
+        let lastUnpauseSpeed = 0;
 
         canvas.addEventListener('wheel', (event) => {
             event.preventDefault();
-
-            if (paused) {
-                // If we were paused, start with a very low speed.
-                baseSpeed = event.deltaY > 0 ? -0.003 : 0.003;  // Small initial speed, direction-dependent
-                paused = false; // unpause
-            } else {
-                // If we weren't paused, adjust the speed normally.
-                baseSpeed -= event.deltaY * 0.0001;
-            }
-
+            paused ? (baseSpeed = event.deltaY > 0 ? -0.003 : 0.003, paused = false) : (baseSpeed -= event.deltaY * 0.0001);
             baseSpeed = Math.max(-0.03, Math.min(0.03, baseSpeed));
         });
 
-        // Click counter for BSOD easter egg
         let clickCount = 0;
         let clickTimer;
 
-        // Pause/resume and BSOD trigger
         canvas.addEventListener('click', () => {
-            if (!paused) {
-              lastUnpauseSpeed = baseSpeed
-            }
+            if (!paused) { lastUnpauseSpeed = baseSpeed; }
             paused = !paused;
 
-            // BSOD Easter Egg Logic
             clickCount++;
-            clearTimeout(clickTimer); // Reset the timer on each click
+            clearTimeout(clickTimer);
 
             if (clickCount >= 5) {
-                // Trigger BSOD
                 triggerBSOD();
-                clickCount = 0; // Reset count after triggering
+                clickCount = 0;
             } else {
-                clickTimer = setTimeout(() => {
-                    clickCount = 0; // Reset if clicks aren't rapid enough
-                }, 500); // 500ms window for rapid clicks
+                clickTimer = setTimeout(() => { clickCount = 0; }, 500);
             }
-              if (paused) {
-              lastUnpauseSpeed = baseSpeed
-            }
+            if (paused) { lastUnpauseSpeed = baseSpeed; }
         });
 
         function triggerBSOD() {
-            bsod.style.display = 'flex'; // Show the BSOD
-            // Delay adding the 'active' class to allow the display change to take effect
-            setTimeout(() => {
-                bsod.classList.add('active');
-            }, 10); // Short delay (10ms) is usually enough
-            paused = true; //pause the swirl
+            bsod.style.display = 'flex';
+            setTimeout(() => { bsod.classList.add('active'); }, 10);
+            paused = true;
         }
 
-
-        // Text breathing animation
         let opacityDirection = 1;
-        let opacity = 0.2;  // Start at lower opacity
+        let opacity = 0.2;
         function updateTextOpacity() {
-            opacity += 0.0025 * opacityDirection; // Slower fade speed (50% of original)
-            if (opacity >= 0.8) opacityDirection = -1; // Upper limit
-            if (opacity <= 0.1) opacityDirection = 1;  // Lower limit, adjusted for lower starting opacity
+            opacity += 0.0025 * opacityDirection;
+            if (opacity >= 0.8) opacityDirection = -1;
+            if (opacity <= 0.1) opacityDirection = 1;
             instructions.style.opacity = opacity;
         }
 
-        // Particle class for swirling pixels
         class Particle {
             constructor() {
                 this.reset();
@@ -181,12 +98,9 @@
             }
 
             update() {
-                if (!paused) { // Only update angle if not paused
-                    this.angle += this.speed;
-                }
+                if (!paused) { this.angle += this.speed; }
                 this.radius -= 0.5;
                 if (this.radius <= 1) this.reset();
-
                 this.x = mouseX + Math.cos(this.angle) * this.radius;
                 this.y = mouseY + Math.sin(this.angle) * this.radius;
             }
@@ -197,10 +111,8 @@
             }
         }
 
-        // Initialize particles
         const particles = Array.from({ length: NUM_PIXELS }, () => new Particle());
 
-        // Animation loop
         function animate() {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -211,12 +123,10 @@
                 particle.draw();
             });
 
-            updateTextOpacity(); // Update text opacity each frame
-
+            updateTextOpacity();
             requestAnimationFrame(animate);
         }
 
-        // Start animation
         animate();
     </script>
 </body>
